@@ -1,0 +1,1 @@
+aws cloudformation update-stack --stack-name developers --template-body file://developers.yaml --capabilities CAPABILITY_NAMED_IAM
