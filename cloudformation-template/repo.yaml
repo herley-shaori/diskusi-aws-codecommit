@@ -87,11 +87,11 @@ Resources:
       Tags: 
         - Key: department
           Value: demo
-  AturanUntukDevelopers:
+  AturanDevelopers:
     Type: AWS::IAM::Policy
     DependsOn: DemoCodeCommit
     Properties:
-      PolicyName: AturanDevelopers
+      PolicyName: AturanDuaDevelopers
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -118,6 +118,22 @@ Resources:
                 - refs/heads/master
       Groups:
         - !Ref Developers
+
+  AturanLeadDev:
+    Type: AWS::IAM::Policy
+    DependsOn: DemoCodeCommit
+    Properties:
+      PolicyName: AturanLeads
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - codecommit:*
+            Resource: 'arn:aws:codecommit:ap-southeast-1:623127157773:demo-repository'
+      Groups:
+        - !Ref Leaders
+
   S3UntukCodePipeline:
     Type: AWS::S3::Bucket
     Properties:
