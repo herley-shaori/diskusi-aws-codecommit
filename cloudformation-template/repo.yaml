@@ -124,6 +124,8 @@ Resources:
               - iam:GetLoginProfile
               - iam:CreateAccessKey
               - iam:ListAccessKeys
+              - iam:UpdateAccessKey 
+              - iam:ListServiceSpecificCredentials
             Resource:
               - arn:aws:iam::623127157773:user/Dev-A
               - arn:aws:iam::623127157773:user/Dev-B
