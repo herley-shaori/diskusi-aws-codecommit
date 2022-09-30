@@ -109,6 +109,7 @@ Resources:
           - Effect: Allow
             Action:
               - codecommit:GitPush
+              - codecommit:CreatePullRequest
             Resource: arn:aws:codecommit:ap-southeast-1:623127157773:demo-repository
             Condition:
               StringNotEqualsIfExists:
@@ -139,6 +140,8 @@ Resources:
               - iam:GetServiceLastAccessedDetails
               - iam:GetAccountAuthorizationDetails
               - iam:GetAccountSummary
+              - iam:ResetServiceSpecificCredential
+              - iam:DeleteServiceSpecificCredential
             Resource: "*"
           - Effect: Allow
             Action:
@@ -165,6 +168,7 @@ Resources:
               - codecommit:ListRepositories
               - codecommit:UpdateApprovalRuleTemplateContent
               - codecommit:UpdateApprovalRuleTemplateDescription
+              - codecommit:Merge* 
             Resource: '*'
           - Effect: Allow
             Action: codecommit:*
