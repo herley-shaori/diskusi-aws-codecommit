@@ -109,18 +109,46 @@ Resources:
           - Effect: Allow
             Action:
               - codecommit:GitPush
-            Resource: 'arn:aws:codecommit:ap-southeast-1:623127157773:demo-repository'
+            Resource: arn:aws:codecommit:ap-southeast-1:623127157773:demo-repository
             Condition:
               StringNotEqualsIfExists:
                 codecommit:References:
                 - refs/heads/master
+          - Effect: Allow
+            Action:
+              - iam:CreateLoginProfile
+              - iam:CreateServiceSpecificCredential
+              - iam:ListSSHPublicKeys
+              - iam:GetSSHPublicKey
+              - iam:ListUserPolicies
+              - iam:GetLoginProfile
+              - iam:CreateAccessKey
+              - iam:ListAccessKeys
+            Resource:
+              - arn:aws:iam::623127157773:user/Dev-A
+              - arn:aws:iam::623127157773:user/Dev-B
+          - Effect: Allow
+            Action:
+              - iam:GenerateCredentialReport
+              - iam:GetServiceLastAccessedDetailsWithEntities
+              - iam:ListAccountAliases
+              - iam:ListRoles
+              - iam:GetCredentialReport
+              - iam:GetServiceLastAccessedDetails
+              - iam:GetAccountAuthorizationDetails
+              - iam:GetAccountSummary
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - iam:ListUsers
+            Resource: '*'
       Groups:
         - !Ref Developers
   AturanLeadDev:
     Type: AWS::IAM::Policy
     DependsOn: DemoCodeCommit
     Properties:
-      PolicyName: AturanLeadSatu
+      PolicyName: AturanLeadDev
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -154,6 +182,30 @@ Resources:
             Action: 
             - codepipeline:*
             Resource: arn:aws:codecommit:ap-southeast-1:623127157773:diskusi-CodeCommit
+          - Effect: Allow
+            Action:
+              - iam:ListUsers
+            Resource: '*'
+          - Effect: Allow
+            Action:
+            - iam:ListAccessKeys
+            - iam:ListSSHPublicKeys
+            - iam:GetLoginProfile
+            - iam:DeleteSSHPublicKey
+            - iam:GetSSHPublicKey
+            - iam:ListSSHPublicKeys
+            - iam:UpdateSSHPublicKey
+            - iam:UploadSSHPublicKey
+            - iam:GetAccountSummary
+            Resource: arn:aws:iam::623127157773:user/Lead-Developer
+          - Effect: Allow
+            Action:
+            - iam:CreateServiceSpecificCredential
+            - iam:DeleteServiceSpecificCredential
+            - iam:ListServiceSpecificCredentials
+            - iam:ResetServiceSpecificCredential
+            - iam:UpdateServiceSpecificCredential
+            Resource: arn:aws:iam::623127157773:user/Lead-Developer
       Groups:
         - !Ref Leaders
   S3UntukCodePipeline:
