@@ -91,7 +91,7 @@ Resources:
     Type: AWS::IAM::Policy
     DependsOn: DemoCodeCommit
     Properties:
-      PolicyName: AturanDuaDevelopers
+      PolicyName: AturanDevelopers
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -101,10 +101,10 @@ Resources:
             Resource: '*'
           - Effect: Allow
             Action:
-              codecommit:Describe*
-              codecommit:Get*
-              codecommit:List*
-              codecommit:GitPull
+              - codecommit:Describe*
+              - codecommit:Get*
+              - codecommit:List*
+              - codecommit:GitPull
             Resource: arn:aws:codecommit:ap-southeast-1:623127157773:demo-repository
           - Effect: Allow
             Action:
@@ -116,7 +116,6 @@ Resources:
                 - refs/heads/master
       Groups:
         - !Ref Developers
-
   AturanLeadDev:
     Type: AWS::IAM::Policy
     DependsOn: DemoCodeCommit
@@ -157,7 +156,6 @@ Resources:
             Resource: arn:aws:codecommit:ap-southeast-1:623127157773:diskusi-CodeCommit
       Groups:
         - !Ref Leaders
-
   S3UntukCodePipeline:
     Type: AWS::S3::Bucket
     Properties:
