@@ -97,17 +97,15 @@ Resources:
         Statement:
           - Effect: Allow
             Action:
-              - codecommit:BatchGet*
-              - codecommit:BatchDescribe*
-              - codecommit:Describe*
-              - codecommit:EvaluatePullRequestApprovalRules
-              - codecommit:Get*
-              - codecommit:List*
-              - codecommit:GitPull
-              - codecommit:CreateBranch
-              - codecommit:CreateCommit
-              - codecommit:GitPush
-            Resource: 'arn:aws:codecommit:ap-southeast-1:623127157773:demo-repository'
+              - codecommit:ListRepositories
+            Resource: '*'
+          - Effect: Allow
+            Action:
+              codecommit:Describe*
+              codecommit:Get*
+              codecommit:List*
+              codecommit:GitPull
+            Resource: arn:aws:codecommit:ap-southeast-1:623127157773:demo-repository
           - Effect: Allow
             Action:
               - codecommit:GitPush
@@ -123,14 +121,40 @@ Resources:
     Type: AWS::IAM::Policy
     DependsOn: DemoCodeCommit
     Properties:
-      PolicyName: AturanLeads
+      PolicyName: AturanLeadSatu
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
           - Effect: Allow
             Action:
-              - codecommit:*
-            Resource: 'arn:aws:codecommit:ap-southeast-1:623127157773:demo-repository'
+              - codecommit:ListRepositoriesForApprovalRuleTemplate
+              - codecommit:CreateApprovalRuleTemplate
+              - codecommit:UpdateApprovalRuleTemplateName
+              - codecommit:GetApprovalRuleTemplate
+              - codecommit:ListApprovalRuleTemplates
+              - codecommit:DeleteApprovalRuleTemplate
+              - codecommit:ListRepositories
+              - codecommit:UpdateApprovalRuleTemplateContent
+              - codecommit:UpdateApprovalRuleTemplateDescription
+            Resource: '*'
+          - Effect: Allow
+            Action: codecommit:*
+            Resource: arn:aws:codecommit:ap-southeast-1:623127157773:demo-repository
+          - Effect: Allow
+            Action: 
+            - codepipeline:GetPipeline
+            - codepipeline:GetPipelineState
+            - codepipeline:GetPipelineExecution
+            - codepipeline:ListPipelineExecutions
+            - codepipeline:ListActionExecutions
+            - codepipeline:ListActionTypes
+            - codepipeline:ListPipelines
+            - codepipeline:ListTagsForResource
+            Resource: '*'
+          - Effect: Allow
+            Action: 
+            - codepipeline:*
+            Resource: arn:aws:codecommit:ap-southeast-1:623127157773:diskusi-CodeCommit
       Groups:
         - !Ref Leaders
 
