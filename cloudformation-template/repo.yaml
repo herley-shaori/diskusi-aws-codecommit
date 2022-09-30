@@ -1,0 +1,169 @@
+Parameters:
+  CodeCommitRepoName:
+    Type: String
+    Default: demo-repository
+    AllowedPattern: "[A-Za-z0-9-]+"
+  CodeBuildName:
+    Type: String
+    Default: demo-codebuild
+    AllowedPattern: "[A-Za-z0-9-]+"
+Resources:
+  DeveloperA:
+    Type: AWS::IAM::User
+    Properties: 
+      Tags: 
+        - Key: role
+          Value: member
+      UserName: Dev-A
+      LoginProfile:
+          Password: KataSandinyaSangatRahasia123456
+          PasswordResetRequired: False
+  DeveloperB:
+    Type: AWS::IAM::User
+    Properties: 
+      Tags: 
+        - Key: role
+          Value: member
+      UserName: Dev-B
+      LoginProfile:
+          Password: KataSandinyaSangatRahasia123456
+          PasswordResetRequired: False
+  LeadDev:
+    Type: AWS::IAM::User
+    Properties: 
+      Tags: 
+        - Key: role
+          Value: lead
+      UserName: Lead-Developer
+      LoginProfile:
+          Password: KataSandinyaSangatRahasia123456
+          PasswordResetRequired: False
+  Developers:
+    Type: AWS::IAM::Group
+    Properties: 
+      GroupName: DEVELOPERS
+  Leaders:
+    Type: AWS::IAM::Group
+    Properties: 
+      GroupName: LEADERS
+  QA:
+    Type: AWS::IAM::User
+    Properties: 
+      Tags: 
+        - Key: role
+          Value: QA
+      UserName: QA
+      LoginProfile:
+          Password: KataSandinyaSangatRahasia123456
+          PasswordResetRequired: False
+  QualityAssurance:
+    Type: AWS::IAM::Group
+    Properties: 
+      GroupName: QualityAssurance
+  TambahkanDevelopers:
+    Type: AWS::IAM::UserToGroupAddition
+    Properties:
+      GroupName: !Ref Developers
+      Users:
+      - !Ref DeveloperA
+      - !Ref DeveloperB
+  TambahkanLeaders:
+    Type: AWS::IAM::UserToGroupAddition
+    Properties:
+      GroupName: !Ref Leaders
+      Users:
+      - !Ref LeadDev
+  TambahQA:
+    Type: AWS::IAM::UserToGroupAddition
+    Properties:
+      GroupName: !Ref QualityAssurance
+      Users:
+      - !Ref QA
+  DemoCodeCommit:
+    Type: AWS::CodeCommit::Repository
+    Properties: 
+      RepositoryDescription: Kode program untuk diskusi CodeCommit.
+      RepositoryName: !Ref CodeCommitRepoName
+      Tags: 
+        - Key: department
+          Value: demo
+  AturanUntukDevelopers:
+    Type: AWS::IAM::Policy
+    DependsOn: DemoCodeCommit
+    Properties:
+      PolicyName: AturanDevelopers
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - codecommit:BatchGet*
+              - codecommit:BatchDescribe*
+              - codecommit:Describe*
+              - codecommit:EvaluatePullRequestApprovalRules
+              - codecommit:Get*
+              - codecommit:List*
+              - codecommit:GitPull
+              - codecommit:CreateBranch
+              - codecommit:CreateCommit
+              - codecommit:GitPush
+            Resource: 'arn:aws:codecommit:ap-southeast-1:623127157773:demo-repository'
+          - Effect: Allow
+            Action:
+              - codecommit:GitPush
+            Resource: 'arn:aws:codecommit:ap-southeast-1:623127157773:demo-repository'
+            Condition:
+              StringNotEqualsIfExists:
+                codecommit:References:
+                - refs/heads/master
+      Groups:
+        - !Ref Developers
+  S3UntukCodePipeline:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: bucket-untuk-codepipeline
+      Tags: 
+        - Key: department
+          Value: demo
+  DemoCodePipeline:
+    DependsOn: S3UntukCodePipeline
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      Name: diskusi-CodeCommit
+      RoleArn: arn:aws:iam::623127157773:role/service-role/AWSCodePipelineServiceRole-ap-southeast-1-Unsimple-Hello-World
+      ArtifactStore:
+        Type: S3
+        Location: bucket-untuk-codepipeline
+      Stages:
+        - Name: Source
+          Actions:
+          - Name: CustomSource
+            ActionTypeId:
+              Category: Source
+              Owner: AWS
+              Version: 1
+              Provider: CodeCommit
+            OutputArtifacts:
+            - Name: SourceCode
+            Configuration:
+              RepositoryName: !Ref CodeCommitRepoName
+              BranchName: master
+            RunOrder: 1
+        - Name: CustomBuild
+          Actions:
+          - Name: Build
+            InputArtifacts:
+              - Name: SourceCode
+            ActionTypeId:
+              Category: Build
+              Owner: AWS
+              Version: 1
+              Provider: CodeBuild
+            Configuration:
+              ProjectName: !Ref CodeBuildName
+            OutputArtifacts:
+            - Name: BuiltCode
+            RunOrder: 2
+      DisableInboundStageTransitions:
+          - Reason: Tidak perlu membangun kode program.
+            StageName: CustomBuild

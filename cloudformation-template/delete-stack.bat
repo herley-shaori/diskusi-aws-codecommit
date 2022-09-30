@@ -1,1 +1,1 @@
-aws cloudformation delete-stack --stack-name developers
+aws cloudformation delete-stack --stack-name repo
