@@ -200,14 +200,6 @@ Resources:
             - iam:UploadSSHPublicKey
             - iam:GetAccountSummary
             Resource: arn:aws:iam::623127157773:user/Lead-Developer
-          - Effect: Allow
-            Action:
-            - iam:CreateServiceSpecificCredential
-            - iam:DeleteServiceSpecificCredential
-            - iam:ListServiceSpecificCredentials
-            - iam:ResetServiceSpecificCredential
-            - iam:UpdateServiceSpecificCredential
-            Resource: arn:aws:iam::623127157773:user/Lead-Developer
       Groups:
         - !Ref Leaders
   S3UntukCodePipeline:
