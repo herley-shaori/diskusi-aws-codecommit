@@ -252,17 +252,32 @@ Resources:
               - Name: SourceCodeDev
             Configuration:
               ApplicationName: !Ref Application
-              DeploymentGroupName: !Ref DeploymentGroup
+              DeploymentGroupName: !Ref DeploymentGroupDev
             RunOrder: 2
-      #   - Name: Approval
-      #     Actions:
-      #       - Name: QA
-      #         ActionTypeId:
-      #           Category: Approval
-      #           Owner: AWS
-      #           Version: 1
-      #           Provider: Manual
-      #         RunOrder: 2  
+        - Name: Approval
+          Actions:
+            - Name: QA
+              ActionTypeId:
+                Category: Approval
+                Owner: AWS
+                Version: 1
+                Provider: Manual
+              RunOrder: 3
+        - Name: ProductionDeployment
+          Actions:
+          - Name: Deploy
+            ActionTypeId:
+              Category: Deploy
+              Owner: AWS
+              Version: 1
+              Provider: CodeDeploy
+            InputArtifacts:
+              - Name: SourceCodeDev
+            Configuration:
+              ApplicationName: !Ref Application
+              DeploymentGroupName: !Ref DeploymentGroupProd
+            RunOrder: 24
+
       #   - Name: CustomBuild
       #     Actions:
       #     - Name: Build
@@ -318,6 +333,29 @@ Resources:
             chmod +x ./install
             sudo ./install auto
             sudo service codedeploy-agent status
+  EC2Prod:
+    Type: AWS::EC2::Instance
+    Properties: 
+      IamInstanceProfile: demo-ec2-role
+      ImageId: ami-0f62d9254ca98e1aa
+      InstanceType: t2.nano
+      KeyName: demoKeyPair
+      SecurityGroups: 
+        - !Ref SecurityGroupEC2
+      Tags: 
+        - Key: environment
+          Value: production
+      UserData:
+        Fn::Base64:
+          !Sub |
+            #!/bin/bash -xe
+            sudo yum update
+            sudo yum install ruby -y
+            sudo yum install wget -y
+            wget https://aws-codedeploy-ap-southeast-1.s3.amazonaws.com/latest/install
+            chmod +x ./install
+            sudo ./install auto
+            sudo service codedeploy-agent status
 
   CodeDeployIAMRole:
     Type: 'AWS::IAM::Role'
@@ -337,7 +375,7 @@ Resources:
   
   Application:
     Type: "AWS::CodeDeploy::Application"
-  DeploymentGroup:
+  DeploymentGroupDev:
     Type: "AWS::CodeDeploy::DeploymentGroup"
     Properties:
       ApplicationName: !Ref Application
@@ -345,4 +383,13 @@ Resources:
         - Key: environment
           Type: KEY_AND_VALUE
           Value: development
+      ServiceRoleArn: !Sub '${CodeDeployIAMRole.Arn}'
+  DeploymentGroupProd:
+    Type: "AWS::CodeDeploy::DeploymentGroup"
+    Properties:
+      ApplicationName: !Ref Application
+      Ec2TagFilters:
+        - Key: environment
+          Type: KEY_AND_VALUE
+          Value: production
       ServiceRoleArn: !Sub '${CodeDeployIAMRole.Arn}'
