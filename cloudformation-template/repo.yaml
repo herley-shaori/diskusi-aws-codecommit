@@ -1,8 +1,4 @@
 Parameters:
-  CodeCommitRepoName:
-    Type: String
-    Default: demo-repository
-    AllowedPattern: "[A-Za-z0-9-]+"
   CodeBuildName:
     Type: String
     Default: demo-codebuild
@@ -79,17 +75,25 @@ Resources:
       GroupName: !Ref QualityAssurance
       Users:
       - !Ref QA
-  DemoCodeCommit:
+  DemoCodeCommitDev:
     Type: AWS::CodeCommit::Repository
     Properties: 
       RepositoryDescription: Kode program untuk diskusi CodeCommit.
-      RepositoryName: !Ref CodeCommitRepoName
+      RepositoryName: demo-codecommit-dev
+      Tags: 
+        - Key: department
+          Value: demo
+  DemoCodeCommitProd:
+    Type: AWS::CodeCommit::Repository
+    Properties: 
+      RepositoryDescription: Kode program untuk diskusi CodeCommit.
+      RepositoryName: demo-codecommit-prod
       Tags: 
         - Key: department
           Value: demo
   AturanDevelopers:
     Type: AWS::IAM::Policy
-    DependsOn: DemoCodeCommit
+    DependsOn: DemoCodeCommitDev
     Properties:
       PolicyName: AturanDevelopers
       PolicyDocument:
@@ -151,7 +155,6 @@ Resources:
         - !Ref Developers
   AturanLeadDev:
     Type: AWS::IAM::Policy
-    DependsOn: DemoCodeCommit
     Properties:
       PolicyName: AturanLeadDev
       PolicyDocument:
@@ -223,35 +226,119 @@ Resources:
         Type: S3
         Location: bucket-untuk-codepipeline
       Stages:
-        - Name: Source
+        - Name: SourceDev
           Actions:
-          - Name: CustomSource
+          - Name: DevSource
             ActionTypeId:
               Category: Source
               Owner: AWS
               Version: 1
               Provider: CodeCommit
             OutputArtifacts:
-            - Name: SourceCode
+            - Name: SourceCodeDev
             Configuration:
-              RepositoryName: !Ref CodeCommitRepoName
-              BranchName: master
+              RepositoryName: demo-codecommit-dev
+              BranchName: main
             RunOrder: 1
-        - Name: CustomBuild
+        - Name: DevelopmentDeployment
           Actions:
-          - Name: Build
-            InputArtifacts:
-              - Name: SourceCode
+          - Name: Deploy
             ActionTypeId:
-              Category: Build
+              Category: Deploy
               Owner: AWS
               Version: 1
-              Provider: CodeBuild
+              Provider: CodeDeploy
+            InputArtifacts:
+              - Name: SourceCodeDev
             Configuration:
-              ProjectName: !Ref CodeBuildName
-            OutputArtifacts:
-            - Name: BuiltCode
+              ApplicationName: !Ref Application
+              DeploymentGroupName: !Ref DeploymentGroup
             RunOrder: 2
-      DisableInboundStageTransitions:
-          - Reason: Tidak perlu membangun kode program.
-            StageName: CustomBuild
+      #   - Name: Approval
+      #     Actions:
+      #       - Name: QA
+      #         ActionTypeId:
+      #           Category: Approval
+      #           Owner: AWS
+      #           Version: 1
+      #           Provider: Manual
+      #         RunOrder: 2  
+      #   - Name: CustomBuild
+      #     Actions:
+      #     - Name: Build
+      #       InputArtifacts:
+      #         - Name: SourceCodeDev
+      #       ActionTypeId:
+      #         Category: Build
+      #         Owner: AWS
+      #         Version: 1
+      #         Provider: CodeBuild
+      #       Configuration:
+      #         ProjectName: !Ref CodeBuildName
+      #       OutputArtifacts:
+      #       - Name: BuiltCode
+      #       RunOrder: 3
+      # DisableInboundStageTransitions:
+      #     - Reason: Tidak perlu membangun kode program.
+      #       StageName: CustomBuild
+  SecurityGroupEC2:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: SecurityGroup untuk EC2.
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        FromPort: 22
+        IpProtocol: tcp
+        ToPort: 22
+  
+  EC2Dev:
+    Type: AWS::EC2::Instance
+    Properties: 
+      IamInstanceProfile: demo-ec2-role
+      ImageId: ami-0f62d9254ca98e1aa
+      InstanceType: t2.nano
+      KeyName: demoKeyPair
+      SecurityGroups: 
+        - !Ref SecurityGroupEC2
+      Tags: 
+        - Key: environment
+          Value: development
+      UserData:
+        Fn::Base64:
+          !Sub |
+            #!/bin/bash -xe
+            sudo yum update
+            sudo yum install ruby -y
+            sudo yum install wget -y
+            wget https://aws-codedeploy-ap-southeast-1.s3.amazonaws.com/latest/install
+            chmod +x ./install
+            sudo ./install auto
+            sudo service codedeploy-agent status
+
+  CodeDeployIAMRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - 'codedeploy.amazonaws.com'
+          Action:
+          - 'sts:AssumeRole'
+      Path: '/'
+      ManagedPolicyArns:
+      - 'arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole'
+  
+  Application:
+    Type: "AWS::CodeDeploy::Application"
+  DeploymentGroup:
+    Type: "AWS::CodeDeploy::DeploymentGroup"
+    Properties:
+      ApplicationName: !Ref Application
+      Ec2TagFilters:
+        - Key: environment
+          Type: KEY_AND_VALUE
+          Value: development
+      ServiceRoleArn: !Sub '${CodeDeployIAMRole.Arn}'
