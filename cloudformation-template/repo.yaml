@@ -91,6 +91,24 @@ Resources:
       Tags: 
         - Key: department
           Value: demo
+  AturanQA:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: AturanQA
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - codepipeline:GetPipeline
+              - codepipeline:GetPipelineState
+              - codepipeline:GetPipelineExecution
+              - codepipeline:ListPipelineExecutions
+              - codepipeline:ListPipelines
+              - codepipeline:PutApprovalResult
+            Resource: "*"
+      Groups:
+        !Ref QualityAssurance
   AturanDevelopers:
     Type: AWS::IAM::Policy
     DependsOn: DemoCodeCommitDev
@@ -277,25 +295,6 @@ Resources:
               ApplicationName: !Ref Application
               DeploymentGroupName: !Ref DeploymentGroupProd
             RunOrder: 24
-
-      #   - Name: CustomBuild
-      #     Actions:
-      #     - Name: Build
-      #       InputArtifacts:
-      #         - Name: SourceCodeDev
-      #       ActionTypeId:
-      #         Category: Build
-      #         Owner: AWS
-      #         Version: 1
-      #         Provider: CodeBuild
-      #       Configuration:
-      #         ProjectName: !Ref CodeBuildName
-      #       OutputArtifacts:
-      #       - Name: BuiltCode
-      #       RunOrder: 3
-      # DisableInboundStageTransitions:
-      #     - Reason: Tidak perlu membangun kode program.
-      #       StageName: CustomBuild
   SecurityGroupEC2:
     Type: AWS::EC2::SecurityGroup
     Properties:
