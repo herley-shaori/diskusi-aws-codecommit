@@ -108,7 +108,7 @@ Resources:
               - codepipeline:PutApprovalResult
             Resource: "*"
       Groups:
-        !Ref QualityAssurance
+        - !Ref QualityAssurance
   AturanDevelopers:
     Type: AWS::IAM::Policy
     DependsOn: DemoCodeCommitDev
