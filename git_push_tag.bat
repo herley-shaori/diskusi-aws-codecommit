@@ -1,4 +1,4 @@
 git remote add ea ssh://git-codecommit.ap-southeast-1.amazonaws.com/v1/repos/demo-codecommit-dev &
-git tag v2 24524486101dc961464e6042d78c05bdb36c68db &
-git push ea v2 &
+git tag v3 42616a738640634ec1f34f15c6aaf12c592081c3 &
+git push ea v3 &
 git remote remove ea
