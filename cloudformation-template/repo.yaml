@@ -254,7 +254,7 @@ Resources:
               ApplicationName: !Ref Application
               DeploymentGroupName: !Ref DeploymentGroupDev
             RunOrder: 2
-        - Name: Approval
+        - Name: ApprovalToProduction
           Actions:
             - Name: QA
               ActionTypeId:
