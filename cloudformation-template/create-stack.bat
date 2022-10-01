@@ -1,1 +1,1 @@
-aws cloudformation create-stack --stack-name repo --template-body file://repo.yaml --capabilities CAPABILITY_NAMED_IAM
+aws cloudformation create-stack --stack-name repo --template-body file://cloudformation-template/repo.yaml --capabilities CAPABILITY_NAMED_IAM
