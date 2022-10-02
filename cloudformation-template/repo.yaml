@@ -313,6 +313,8 @@ Resources:
       Tags: 
         - Key: environment
           Value: development
+        - Key: Name
+          Value: DevelopmentServer
       UserData:
         Fn::Base64:
           !Sub |
@@ -336,6 +338,8 @@ Resources:
       Tags: 
         - Key: environment
           Value: production
+        - Key: Name
+          Value: ProductionServer
       UserData:
         Fn::Base64:
           !Sub |
