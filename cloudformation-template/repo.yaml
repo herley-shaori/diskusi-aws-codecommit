@@ -83,14 +83,6 @@ Resources:
       Tags: 
         - Key: department
           Value: demo
-  DemoCodeCommitProd:
-    Type: AWS::CodeCommit::Repository
-    Properties: 
-      RepositoryDescription: Kode program untuk diskusi CodeCommit.
-      RepositoryName: demo-codecommit-prod
-      Tags: 
-        - Key: department
-          Value: demo
   AturanQA:
     Type: AWS::IAM::Policy
     Properties:
